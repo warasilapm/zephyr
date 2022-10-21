@@ -202,11 +202,11 @@ MODEM_CMD_DEFINE(on_cmd_error)
 static void esp_rx(struct esp_data *data)
 {
 	while (true) {
-		/* wait for incoming data */
-		k_sem_take(&data->iface_data.rx_sem, K_FOREVER);
+		/* Wait for incoming data */
+		modem_iface_uart_rx_wait(&data->mctx.iface, K_FOREVER);
 
-		data->mctx.cmd_handler.process(&data->mctx.cmd_handler,
-					       &data->mctx.iface);
+		/* Process data */
+		modem_cmd_handler_process(&data->mctx.cmd_handler, &data->mctx.iface);
 
 		/* give up time if we have a solid stream of data */
 		k_yield();
@@ -1138,28 +1138,31 @@ static int esp_init(const struct device *dev)
 			   NULL);
 	k_thread_name_set(&data->workq.thread, "esp_workq");
 
+	/* cmd handler setup */
+	const struct modem_cmd_handler_setup cmd_handler_setup = {
+		.match_buf = &data->cmd_match_buf[0],
+		.match_buf_len = sizeof(data->cmd_match_buf),
+		.buf_pool = &mdm_recv_pool,
+		.alloc_timeout = K_NO_WAIT,
+		.eol = "\r\n",
+		.user_data = NULL,
+		.response_cmds = response_cmds,
+		.response_cmds_len = ARRAY_SIZE(response_cmds),
+		.unsol_cmds = unsol_cmds,
+		.unsol_cmds_len = ARRAY_SIZE(unsol_cmds)
+	};
+
 	/* cmd handler */
-	data->cmd_handler_data.cmds[CMD_RESP] = response_cmds;
-	data->cmd_handler_data.cmds_len[CMD_RESP] = ARRAY_SIZE(response_cmds);
-	data->cmd_handler_data.cmds[CMD_UNSOL] = unsol_cmds;
-	data->cmd_handler_data.cmds_len[CMD_UNSOL] = ARRAY_SIZE(unsol_cmds);
-	data->cmd_handler_data.match_buf = &data->cmd_match_buf[0];
-	data->cmd_handler_data.match_buf_len = sizeof(data->cmd_match_buf);
-	data->cmd_handler_data.buf_pool = &mdm_recv_pool;
-	data->cmd_handler_data.alloc_timeout = K_NO_WAIT;
-	data->cmd_handler_data.eol = "\r\n";
-	ret = modem_cmd_handler_init(&data->mctx.cmd_handler,
-				       &data->cmd_handler_data);
+	ret = modem_cmd_handler_init(&data->mctx.cmd_handler, &data->cmd_handler_data,
+		&cmd_handler_setup);
 	if (ret < 0) {
 		goto error;
 	}
 
 	/* modem interface */
-	data->iface_data.hw_flow_control = DT_PROP(ESP_BUS, hw_flow_control);
-	data->iface_data.rx_rb_buf = &data->iface_rb_buf[0];
-	data->iface_data.rx_rb_buf_len = sizeof(data->iface_rb_buf);
-	ret = modem_iface_uart_init(&data->mctx.iface, &data->iface_data,
-				    DEVICE_DT_GET(DT_INST_BUS(0)));
+	ret = modem_iface_uart_init(&data->mctx.iface, &data->iface_data, &data->iface_rb_buf[0],
+		sizeof(data->iface_rb_buf), DEVICE_DT_GET(DT_INST_BUS(0)),
+		DT_PROP(ESP_BUS, hw_flow_control));
 	if (ret < 0) {
 		goto error;
 	}
