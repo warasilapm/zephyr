@@ -174,11 +174,11 @@ static void gsm_rx(struct gsm_modem *gsm)
 	LOG_DBG("starting");
 
 	while (true) {
-		(void)k_sem_take(&gsm->gsm_data.rx_sem, K_FOREVER);
+		/* Wait for incoming data */
+		modem_iface_uart_rx_wait(&gsm->context.iface, K_FOREVER);
 
-		/* The handler will listen AT channel */
-		gsm->context.cmd_handler.process(&gsm->context.cmd_handler,
-						 &gsm->context.iface);
+		/* Process data */
+		modem_cmd_handler_process(&gsm->context.cmd_handler, &gsm->context.iface);
 	}
 }
 
@@ -1267,19 +1267,26 @@ static int gsm_init(const struct device *dev)
 	(void)k_mutex_init(&gsm->lock);
 	gsm->dev = dev;
 
-	gsm->cmd_handler_data.cmds[CMD_RESP] = response_cmds;
-	gsm->cmd_handler_data.cmds_len[CMD_RESP] = ARRAY_SIZE(response_cmds);
-	gsm->cmd_handler_data.match_buf = &gsm->cmd_match_buf[0];
-	gsm->cmd_handler_data.match_buf_len = sizeof(gsm->cmd_match_buf);
-	gsm->cmd_handler_data.buf_pool = &gsm_recv_pool;
-	gsm->cmd_handler_data.alloc_timeout = K_NO_WAIT;
-	gsm->cmd_handler_data.eol = "\r";
-
 	(void)k_sem_init(&gsm->sem_response, 0, 1);
 	(void)k_sem_init(&gsm->sem_if_down, 0, 1);
 
-	ret = modem_cmd_handler_init(&gsm->context.cmd_handler,
-				   &gsm->cmd_handler_data);
+	/* cmd handler setup */
+	const struct modem_cmd_handler_setup cmd_handler_setup = {
+		.match_buf = &gsm->cmd_match_buf[0],
+		.match_buf_len = sizeof(gsm->cmd_match_buf),
+		.buf_pool = &gsm_recv_pool,
+		.alloc_timeout = K_NO_WAIT,
+		.eol = "\r",
+		.user_data = NULL,
+		.response_cmds = response_cmds,
+		.response_cmds_len = ARRAY_SIZE(response_cmds),
+		.unsol_cmds = NULL,
+		.unsol_cmds_len = 0
+	};
+
+	/* cmd handler */
+	ret = modem_cmd_handler_init(&gsm->context.cmd_handler, &gsm->cmd_handler_data,
+		&cmd_handler_setup);
 	if (ret < 0) {
 		LOG_DBG("cmd handler error %d", ret);
 		return ret;
@@ -1299,13 +1306,10 @@ static int gsm_init(const struct device *dev)
 #endif	/* CONFIG_MODEM_SHELL */
 
 	gsm->context.is_automatic_oper = false;
-	gsm->gsm_data.rx_rb_buf = &gsm->gsm_rx_rb_buf[0];
-	gsm->gsm_data.rx_rb_buf_len = sizeof(gsm->gsm_rx_rb_buf);
-	gsm->gsm_data.hw_flow_control = DT_PROP(GSM_UART_NODE,
-						hw_flow_control);
 
-	ret = modem_iface_uart_init(&gsm->context.iface, &gsm->gsm_data,
-				DEVICE_DT_GET(GSM_UART_NODE));
+	ret = modem_iface_uart_init(&gsm->context.iface, &gsm->gsm_data, &gsm->gsm_rx_rb_buf[0],
+		sizeof(gsm->gsm_rx_rb_buf), DEVICE_DT_GET(GSM_UART_NODE),
+		DT_PROP(GSM_UART_NODE, hw_flow_control));
 	if (ret < 0) {
 		LOG_DBG("iface uart error %d", ret);
 		return ret;
