@@ -64,8 +64,8 @@ int modem_iface_uart_init_dev(struct modem_iface *iface,
  * @return 0 if successful
  */
 int modem_iface_uart_init(struct modem_iface *iface, struct modem_iface_uart_data *data,
-			      char *rx_rb_buf, size_t rx_rb_buf_len, const struct device *dev,
-			      bool hw_flow_control);
+			  char *rx_rb_buf, size_t rx_rb_buf_len, const struct device *dev,
+			  bool hw_flow_control);
 
 /**
  * @brief Wait for rx data ready from uart interface
@@ -76,7 +76,8 @@ int modem_iface_uart_init(struct modem_iface *iface, struct modem_iface_uart_dat
  * @return -EBUSY if returned without waiting
  * @return -EAGAIN if timeout occurred
  */
-static inline int modem_iface_uart_rx_wait(struct modem_iface *iface, k_timeout_t timeout)
+static inline int modem_iface_uart_rx_wait(struct modem_iface *iface,
+					   k_timeout_t timeout)
 {
 	return k_sem_take(&((struct modem_iface_uart_data *)(iface->iface_data))->rx_sem, timeout);
 }

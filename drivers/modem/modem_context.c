@@ -20,7 +20,9 @@ LOG_MODULE_REGISTER(modem_context, CONFIG_MODEM_LOG_LEVEL);
 
 static struct modem_context *contexts[CONFIG_MODEM_CONTEXT_MAX_NUM];
 
-int modem_context_sprint_ip_addr(const struct sockaddr *addr, char *buf, size_t buf_size)
+int modem_context_sprint_ip_addr(const struct sockaddr *addr,
+				 char *buf,
+				 size_t buf_size)
 {
 	static const char unknown_str[] = "unk";
 

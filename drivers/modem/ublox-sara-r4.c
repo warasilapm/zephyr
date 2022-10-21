@@ -2148,7 +2148,7 @@ static int modem_init(const struct device *dev)
 
 	/* socket config */
 	ret = modem_socket_init(&mdata.socket_config, &mdata.sockets[0], ARRAY_SIZE(mdata.sockets),
-			   MDM_BASE_SOCKET_NUM, false, &offload_socket_fd_op_vtable);
+				MDM_BASE_SOCKET_NUM, false, &offload_socket_fd_op_vtable);
 	if (ret < 0) {
 		goto error;
 	}

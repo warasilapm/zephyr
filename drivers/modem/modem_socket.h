@@ -101,8 +101,8 @@ void modem_socket_data_ready(struct modem_socket_config *cfg, struct modem_socke
  * @return 0 if successful
  */
 int modem_socket_init(struct modem_socket_config *cfg, struct modem_socket *sockets,
-			      size_t sockets_len, int base_socket_id, bool assign_id,
-			      const struct socket_op_vtable *vtable);
+		      size_t sockets_len, int base_socket_id, bool assign_id,
+		      const struct socket_op_vtable *vtable);
 
 /**
  * @brief Check if modem socket has been allocated
@@ -131,7 +131,7 @@ bool modem_socket_is_allocated(const struct modem_socket_config *cfg,
  * @return true if the socket id is been assigned, otherwise false
  */
 bool modem_socket_id_is_assigned(const struct modem_socket_config *cfg,
-			      const struct modem_socket *sock);
+				 const struct modem_socket *sock);
 
 /**
  * @brief Assign id to modem socket
@@ -144,7 +144,8 @@ bool modem_socket_id_is_assigned(const struct modem_socket_config *cfg,
  * @return -EINVAL if id is invalid
  */
 int modem_socket_id_assign(const struct modem_socket_config *cfg,
-			      struct modem_socket *sock, int id);
+			   struct modem_socket *sock,
+			   int id);
 
 #ifdef __cplusplus
 }

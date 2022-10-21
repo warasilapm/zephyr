@@ -46,7 +46,7 @@ static void skipcrlf(struct modem_cmd_handler_data *data)
 }
 
 static uint16_t findcrlf(struct modem_cmd_handler_data *data,
-		      struct net_buf **frag, uint16_t *offset)
+			 struct net_buf **frag, uint16_t *offset)
 {
 	struct net_buf *buf = data->rx_buf;
 	uint16_t len = 0U, pos = 0U;
@@ -180,7 +180,7 @@ static int parse_params(struct modem_cmd_handler_data *data,  size_t match_len,
 
 /* process a "matched" command */
 static int process_cmd(const struct modem_cmd *cmd, size_t match_len,
-			struct modem_cmd_handler_data *data)
+		       struct modem_cmd_handler_data *data)
 {
 	int parsed_len = 0, ret = 0;
 	uint8_t *argv[CONFIG_MODEM_CMD_HANDLER_MAX_PARAM_COUNT];
@@ -221,8 +221,7 @@ static int process_cmd(const struct modem_cmd *cmd, size_t match_len,
  * - unsolicited handlers[1]
  * - current assigned handlers[2]
  */
-static const struct modem_cmd *find_cmd_match(
-		struct modem_cmd_handler_data *data)
+static const struct modem_cmd *find_cmd_match(struct modem_cmd_handler_data *data)
 {
 	int j;
 	size_t i;
@@ -646,8 +645,8 @@ void modem_cmd_handler_tx_unlock(struct modem_cmd_handler *handler)
 }
 
 int modem_cmd_handler_init(struct modem_cmd_handler *handler,
-			      struct modem_cmd_handler_data *data,
-			      const struct modem_cmd_handler_setup *setup)
+			   struct modem_cmd_handler_data *data,
+			   const struct modem_cmd_handler_setup *setup)
 {
 	/* Verify arguments */
 	if (NULL == handler || NULL == data || NULL == setup) {

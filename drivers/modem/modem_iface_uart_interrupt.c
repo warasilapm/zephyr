@@ -199,8 +199,8 @@ int modem_iface_uart_init_dev(struct modem_iface *iface,
 }
 
 int modem_iface_uart_init(struct modem_iface *iface, struct modem_iface_uart_data *data,
-			char *rx_rb_buf, size_t rx_rb_buf_len, const struct device *dev,
-			bool hw_flow_control)
+			  char *rx_rb_buf, size_t rx_rb_buf_len, const struct device *dev,
+			  bool hw_flow_control)
 {
 	int ret;
 

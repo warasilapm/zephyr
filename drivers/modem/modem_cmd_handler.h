@@ -312,8 +312,8 @@ struct modem_cmd_handler_setup {
  * @return -EINVAL if any argument is invalid, 0 if successful
  */
 int modem_cmd_handler_init(struct modem_cmd_handler *handler,
-			      struct modem_cmd_handler_data *data,
-			      const struct modem_cmd_handler_setup *setup);
+			   struct modem_cmd_handler_data *data,
+			   const struct modem_cmd_handler_setup *setup);
 
 /**
  * @brief  Lock the modem for sending cmds
@@ -359,7 +359,7 @@ void modem_cmd_handler_tx_unlock(struct modem_cmd_handler *handler);
  * @param iface The interface which receives incoming data
  */
 static inline void modem_cmd_handler_process(struct modem_cmd_handler *handler,
-			      struct modem_iface *iface)
+					     struct modem_iface *iface)
 {
 	handler->process(handler, iface);
 }
